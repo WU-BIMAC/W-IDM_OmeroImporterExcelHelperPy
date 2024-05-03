@@ -100,6 +100,7 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
     df.sort_values(by="File Name", inplace=True)
     return df
 
+# WARNING: doesn't close file after writing
 def write_excel(file, df, sheet_number=2, cell="A14"):
     """Write DataFrame to an existing excel file on a specific sheet starting at a specific cell.
 
@@ -112,34 +113,37 @@ def write_excel(file, df, sheet_number=2, cell="A14"):
         None
      Raises:
     """
-    with xw.Book(file) as wb:
-        sheet = wb.sheets[sheet_number]
-        sheet["A14"].options(index=False, header=False).value = df
-        wb.save(file)
+    #with xw.Book(file) as wb:
+    wb = xw.Book(file)
+    sheet = wb.sheets[sheet_number]
+    sheet[cell].options(index=False, header=False).value = df
+    wb.save(file)
 
 # NOTE: I get the sheet name from the sheet index before selecting the sheet because of a naming bug where the unicode character U+0399 capital Greek Iota is present instead of U+0049 capital Roman I
-# TODO: maybe don't close file if running from inside file
+# WARNING: doesn't close file after reading
 def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C11", image_list_cell="B10"):
     """Read an excel file and extract dataset folder name and image file extensions from specific cells.
 
      Args:
         file: excel file.
-        sheet_number: zero-indexed index of Image-List excel worksheet.
-        cell_number: string row and column of excele worksheet cell containing list of image file extensions.
+        dataset_sheet: integer zero-indexed index number of the sheet containing dataset_cell.
+        image_list_sheet: integer zero-indexed index number of the sheet containing image_list_cell.
+        dataset_cell: string cell id of cell containing name of dataset flder.
+        image_list_cell: string cell id of cell containing list of image file extensions.
      Returns:
         A tuple of (string dataset folder name, list of string image file extensions).
      Raises:
     """
-    with xw.Book(file) as wb:
-        sheet = wb.sheets[dataset_sheet]
-        cell = sheet[dataset_cell]
-        dataset = cell.value
-        sheet = wb.sheets[image_list_sheet]
-        cell = sheet[image_list_cell]
-        extensions = cell.value.split(",")
+    #with xw.Book(file) as wb:
+    wb = xw.Book(file)
+    sheet = wb.sheets[dataset_sheet]
+    cell = sheet[dataset_cell]
+    dataset = cell.value
+    sheet = wb.sheets[image_list_sheet]
+    cell = sheet[image_list_cell]
+    extensions = cell.value.split(",")
     return (dataset, extensions)
 
-# TODO: add arg excel to main
 def main(excel):
     """Main method for running the script.
 
@@ -147,34 +151,17 @@ def main(excel):
     and calls create_DataFrame() to output a csv for each dataset.
 
      Args:
+        excel: string name of excel file script is being run from
      Returns:
         None
      Raises:
     """
     cwd = os.getcwd()
-    dataset, extensions = read_excel("2022 Pazour Import Test Project 3#Dataset 1.xlsx")
+
+    dataset, extensions = read_excel(excel)
     df = create_DataFrame(os.path.join(cwd, dataset), extensions)
-    write_excel("2022 Pazour Import Test Project 3#Dataset 1.xlsx", df)
-    write_excel("2022 Pazour Import Test Project 3#Dataset 1.xlsx", excel)
-
-    # dataset, extensions = read_excel(excel)
-    # df = create_DataFrame(os.path.join(cwd, dataset), extensions)
-    # write_excel(excel, df)
-
-    # df = create_DataFrame(os.path.join(root, "Dataset 2"), "2022 Pazour Import Test Project 3#Dataset 2.xlsx")
-    #
-    # df = create_DataFrame(os.path.join(root, "Dataset_Name01"), "Project_Name0_Dataset_Name01.xlsm")
-    #
-    # df = create_DataFrame(os.path.join(root, "Dataset_Name11"), "Project_Name1_Dataset_Name11.xlsm")
-    #
-    # df = create_DataFrame(os.path.join(root, "Dataset_Name21"), "Project_Name2_Dataset_Name21.xlsm")
-    #
-    # df = create_DataFrame(os.path.join(root, "Dataset_Name22"), "Project_Name2_Dataset_Name22.xlsm")
+    write_excel(excel, df)
 
 if __name__ == "__main__":
     arg = sys.argv[1]
     main(arg)
-
-# IDEA: seperate excel file to run code from
-# create copies of excel files/name them something else
-# just run the code from python

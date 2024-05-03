@@ -1,0 +1,26 @@
+Sub fetch_images()
+
+' fetch_images Macro
+' Declare all variables
+Dim objShell As Object
+Dim PythonExe As String
+Dim PythonScript As String
+Dim ExcelPath As String
+
+'Create a new Shell Object
+Set objShell = VBA.CreateObject("Wscript.shell")
+
+'Provide the file path to the Python Exe
+PythonExe = """C:\Users\Devin Coughlin\AppData\Local\Programs\Python\Python39\python.exe"""
+
+'Provide the file path to the Python script
+PythonScript = """C:\Users\Devin Coughlin\Documents\Contract_Work\UMassChan\TestFolder\walk_filesystem.py"""
+
+'Get the path of the Excel workbook this is being run from'
+ExcelPath = Chr(34) & Application.ThisWorkbook.Name & Chr(34)
+
+'Run the Python script
+objShell.Run PythonExe & PythonScript & Chr(32) & ExcelPath, 0, True
+Application.Goto Reference:="fetch_images"
+
+End Sub
