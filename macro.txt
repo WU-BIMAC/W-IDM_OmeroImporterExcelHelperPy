@@ -21,6 +21,5 @@ ExcelPath = Chr(34) & Application.ThisWorkbook.Name & Chr(34)
 
 'Run the Python script
 objShell.Run PythonExe & PythonScript & Chr(32) & ExcelPath, 0, True
-Application.Goto Reference:="fetch_images"
 
 End Sub
