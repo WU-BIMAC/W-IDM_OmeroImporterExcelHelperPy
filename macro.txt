@@ -11,10 +11,10 @@ Dim ExcelPath As String
 Set objShell = VBA.CreateObject("Wscript.shell")
 
 'Provide the file path to the Python Exe
-PythonExe = """C:\Users\Devin Coughlin\AppData\Local\Programs\Python\Python39\python.exe"""
+PythonExe = """python.exe"""
 
 'Provide the file path to the Python script
-PythonScript = """C:\Users\Devin Coughlin\Documents\Contract_Work\UMassChan\TestFolder\fetch_images.py"""
+PythonScript = Chr(34) & Application.ThisWorkbook.Path & "\fetch_images.py" & Chr(34)
 
 'Get the path of the Excel workbook this is being run from'
 ExcelPath = Chr(34) & Application.ThisWorkbook.Name & Chr(34)
