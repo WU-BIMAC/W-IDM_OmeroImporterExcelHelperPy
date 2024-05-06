@@ -14,7 +14,7 @@ Set objShell = VBA.CreateObject("Wscript.shell")
 PythonExe = """C:\Users\Devin Coughlin\AppData\Local\Programs\Python\Python39\python.exe"""
 
 'Provide the file path to the Python script
-PythonScript = """C:\Users\Devin Coughlin\Documents\Contract_Work\UMassChan\TestFolder\walk_filesystem.py"""
+PythonScript = """C:\Users\Devin Coughlin\Documents\Contract_Work\UMassChan\TestFolder\fetch_images.py"""
 
 'Get the path of the Excel workbook this is being run from'
 ExcelPath = Chr(34) & Application.ThisWorkbook.Name & Chr(34)
