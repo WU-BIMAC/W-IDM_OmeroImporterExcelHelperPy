@@ -26,8 +26,7 @@ def truncate_name(dirs, max=MAX_NAME):
     new_filename = split[-1]
     return new_filename
 
-# WARNING: : str.count() is case sensitive
-def image_walk(root, extensions):
+def walk_files(root, extensions):
     """Navigates each file and folder beginning at the root folder and checks for image files.
 
     Args:
@@ -63,10 +62,10 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
      Returns:
         A DataFrame containing information written to the output csv file.
      Catches:
-        ValueError: catches value error from image_walk() if encountering a path longer than MAX_NAME characters
+        ValueError: catches value error from walk_files() if encountering a path longer than MAX_NAME characters
     """
     df = pd.DataFrame(columns=columns)
-    walk = image_walk(root, extensions)
+    walk = walk_files(root, extensions)
 
     for file, filepath, json in walk:
         # seperate the directories in the path from the ending file
@@ -100,7 +99,7 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
     df.sort_values(by="File Name", inplace=True)
     return df
 
-# WARNING: doesn't close file after writing
+# NOTE: : doesn't close file after writing
 def write_excel(file, df, sheet_number=2, cell="A14"):
     """Write DataFrame to an existing excel file on a specific sheet starting at a specific cell.
 
@@ -113,14 +112,13 @@ def write_excel(file, df, sheet_number=2, cell="A14"):
         None
      Raises:
     """
-    #with xw.Book(file) as wb:
     wb = xw.Book(file)
     sheet = wb.sheets[sheet_number]
     sheet[cell].options(index=False, header=False).value = df
     wb.save(file)
 
-# NOTE: I get the sheet name from the sheet index before selecting the sheet because of a naming bug where the unicode character U+0399 capital Greek Iota is present instead of U+0049 capital Roman I
-# WARNING: doesn't close file after reading
+# NOTE: Using sheet index not sheet name because the unicode character U+0399 capital Greek Iota is present instead of U+0049 capital Roman I in some sheet names
+# NOTE: : doesn't close file after reading
 def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C11", image_list_cell="B10"):
     """Read an excel file and extract dataset folder name and image file extensions from specific cells.
 
@@ -134,7 +132,6 @@ def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C11", im
         A tuple of (string dataset folder name, list of string image file extensions).
      Raises:
     """
-    #with xw.Book(file) as wb:
     wb = xw.Book(file)
     sheet = wb.sheets[dataset_sheet]
     cell = sheet[dataset_cell]
@@ -147,8 +144,7 @@ def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C11", im
 def main(excel):
     """Main method for running the script.
 
-    Loops through current directory to find each subdirectory which should be for a dataset of images,
-    and calls create_DataFrame() to output a csv for each dataset.
+    Writes image file data like file and path names to the excel file with the name provided in the argument.
 
      Args:
         excel: string name of excel file script is being run from
