@@ -135,10 +135,11 @@ def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C11", im
     wb = xw.Book(file)
     sheet = wb.sheets[dataset_sheet]
     cell = sheet[dataset_cell]
-    dataset = cell.value
+    dataset = cell.value.strip()
     sheet = wb.sheets[image_list_sheet]
     cell = sheet[image_list_cell]
-    extensions = cell.value.split(",")
+    extensions = cell.value.replace(" ", "")
+    extensions = extensions.split(",")
     return (dataset, extensions)
 
 def main(excel):
