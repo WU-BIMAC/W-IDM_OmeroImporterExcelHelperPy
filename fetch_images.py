@@ -5,7 +5,7 @@ import xlwings as xw
 
 # maximum file name length
 MAX_NAME = 255
-
+# TODO: replace \\ with os.path.sep
 def truncate_name(dirs, max=MAX_NAME):
     """Construct new file name from the end to the front until it exceeds MAX_NAME.
 
@@ -15,12 +15,12 @@ def truncate_name(dirs, max=MAX_NAME):
      Returns:
         String: file name shorter than MAX_NAME
     """
-    new_filename = "\\".join(dirs)
+    new_filename = os.path.sep.join(dirs)
     length = len(new_filename)
     num_split = 1
     while length > max:
         # split off front num_split directories
-        split = new_filename.split("\\", num_split)
+        split = new_filename.split(os.path.sep, num_split)
         length = len(split[-1])
         num_split += 1
     new_filename = split[-1]
@@ -75,10 +75,15 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
         dirpath = dirpath.replace(root, "", 1)
 
         # split dirpath into list of directories
-        dirs = dirpath.split("\\")
+        # TODO: use os.path
 
-        # remove empty string left by the leading "\" after splitting
-        dirs.remove("")
+        dirs = []
+        while 1:
+            head, tail = os.path.split(dirpath)
+            dirs.insert(0, tail)
+            dirpath = head
+            if head == os.path.sep:
+                break
 
         # seperate tags with #
         tags = "#".join(dirs)
@@ -119,7 +124,7 @@ def write_excel(file, df, sheet_number=2, cell="A14"):
 
 # NOTE: Using sheet index not sheet name because the unicode character U+0399 capital Greek Iota is present instead of U+0049 capital Roman I in some sheet names
 # NOTE: : doesn't close file after reading
-def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C11", image_list_cell="B10"):
+def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C10", image_list_cell="B10"):
     """Read an excel file and extract dataset folder name and image file extensions from specific cells.
 
      Args:
