@@ -80,7 +80,7 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
             head, tail = os.path.split(dirpath)
             dirs.insert(0, tail)
             dirpath = head
-            if head == os.path.sep:
+            if (head == "") or (head == os.path.sep): # head=="" is first level file, head==os.path.sep is second or greater level file
                 break
 
         # seperate tags with #
@@ -101,6 +101,8 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
 
     df.sort_values(by="File Name", inplace=True)
     return df
+
+create_DataFrame("Dataset 1", [".czi"])
 
 # NOTE: : doesn't close file after writing
 def write_excel(file, df, sheet_number=2, cell="A14"):
