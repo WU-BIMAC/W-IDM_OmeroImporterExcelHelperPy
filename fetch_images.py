@@ -75,8 +75,6 @@ def create_DataFrame(root, extensions, columns=["File Name","New File Name","Fil
         dirpath = dirpath.replace(root, "", 1)
 
         # split dirpath into list of directories
-        # TODO: use os.path
-
         dirs = []
         while 1:
             head, tail = os.path.split(dirpath)
