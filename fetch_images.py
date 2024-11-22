@@ -4,6 +4,7 @@ import pandas as pd
 import xlwings as xw
 import json
 import re
+from pathlib import Path
 
 # maximum file name length
 MAX_NAME = 255
@@ -11,24 +12,15 @@ MAX_NAME = 255
 #with a given directory eg. dataset5\Timepoint_1\ZStep_1
 #extract the timepoint and ZStep. Covers all possible folder structure outcomes (missing ZStep folder or Timepoint folder...)
 def getTandZ(dirpath):
-    timepoint = ""
-    zStep = ""
-    parts = dirpath.split("\\")
-    if len(parts) == 1:
-        timepoint = "TimePoint_1"
-        zStep = "ZStep_1"
-    elif len(parts) == 3:
-        timepoint= parts[1]
-        zStep = parts[2]
-    elif len(parts) == 2:
-        if parts[1].split("_")[0] == "ZStep":
-            zStep = parts[1]
-            timepoint = "TimePoint_1"
-        elif parts[1].split("_")[0] == "TimePoint":
-            timepoint = parts[1]
-            zStep = "ZStep_1"
-    #return just the number of the timepoint and zStep
-    return timepoint.split("_")[1], zStep.split("_")[1]
+    parts = dirpath.split(os.sep)
+    timepoint = "TimePoint_1"
+    zStep = "ZStep_1"
+    for part in parts:
+        if "TimePoint" in part:
+            timepoint = part
+        if "ZStep" in part:
+            zStep = part
+    return timepoint, zStep
 
 #This function returns a json that holds all possible wells/wavelengths/sites. Used for determining incomplet or missing wells
 def getAllWells(htd):
@@ -397,6 +389,8 @@ def constructHTDInfo(fileLocation):
 
 # If present, returns the important HTD data in a dictionary
 # location: folder location that will be searched
+
+#add where it searches through folders
 def getHtdFile(location):
     for file in os.listdir(location):
         filename, extension = os.path.splitext(file)
@@ -437,23 +431,28 @@ def walk_files(root, extensions, isSPW):
         Yields file name and file path of each image file found.
     Raises:
     """
-    for dirpath, dirnames, files in os.walk(root.split("\\")[-1], topdown=True):
+    scriptDir = os.path.dirname(os.path.abspath(__file__))
+    #first, navigate to the right folder
+    for dirpath, dirnames, files in os.walk(root, topdown=True):
         for file in files:
-            if isSPW:
-                timepoint, zStep = getTandZ(dirpath)
-            filename, extension = os.path.splitext(file)
-            if extension in extensions:
+            name,ex = os.path.splitext(file)
+            if ex in extensions:
+                if isSPW:
+                    timepoint, zStep = getTandZ(dirpath)
                 filepath = os.path.join(dirpath, file)
-                # get accompanying json file
+                relpath = os.path.relpath(filepath, scriptDir)
+
+                #get accompanying json file
                 json = None
                 for f in os.listdir(dirpath):
-                    name, ext = os.path.splitext(f)
-                    if (ext == ".json") and (name.lower().count(file.lower()) > 0):
+                    n, e = os.path.splitext(f)
+                    if (e == ".json") and (n.lower().count(file.lower()) > 0):
                         json = f
                 if isSPW:
-                    yield (file, filepath, json, timepoint, zStep)
+                    yield (file, relpath, json, timepoint, zStep)
                 else:
-                    yield (file, filepath, json)
+                    yield (file, relpath, json)
+
 
 #creates a dataframe for images using the project/dataset structure
 def create_DataFrame_ProjDataset(root, extensions, columns=["File Name","New File Name","File Path","MMA File Path","Tags"]):
@@ -614,7 +613,7 @@ def write_excel(file, df, sheet_number=2, cell="A14"):
 
 # NOTE: Using sheet index not sheet name because the unicode character U+0399 capital Greek Iota is present instead of U+0049 capital Roman I in some sheet names
 # NOTE: : doesn't close file after reading
-def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C10", image_list_cell="B10"):
+def read_excel(file, dataset_sheet=2, image_list_sheet=2, dataset_cell="B9", image_list_cell="B10"):
     """Read an excel file and extract dataset folder name and image file extensions from specific cells.
 
      Args:
@@ -637,22 +636,21 @@ def read_excel(file, dataset_sheet=1, image_list_sheet=2, dataset_cell="C10", im
     extensions = extensions.split(" ")
     return (dataset, extensions)
 
-def main(excel,isSPW):
+def main(excelPath,isSPW):
     """Main method for running the script.
 
     Writes image file data like file and path names to the excel file with the name provided in the argument.
 
      Args:
-        excel: string name of excel file script is being run from
+        excelPath: path to the excel file 
      Returns:
         None
      Raises:
     """
     cwd = os.getcwd()
 
-    dataset, extensions = read_excel(excel)
+    dataset, extensions = read_excel(excelPath)
     if isSPW:
-        #get htd file
         htd = getHtdFile(dataset)
         if htd:
             #using the htd file, get dictionary of valid and refused images. Retreive incomplete wells too
@@ -675,10 +673,11 @@ def main(excel,isSPW):
     else:
         df = create_DataFrame_ProjDataset(os.path.join(cwd, dataset), extensions)
 
-    write_excel(excel, df)
+    write_excel(excelPath, df)
 
 if __name__ == "__main__":
     #isSPW is used to determine if our images are in the SPW format or not
     isSPW = True
     #arg = sys.argv[1]
-    main("Pazour_OMERO_import_template_wMacros_v06.xlsm",isSPW)
+    # add the path to the excel file as an argument
+    main("newImages\\root\images\POST-PUB_YCHAROS_template_noMacros_v16_Oct08_JL_CS_SPW_.xlsm",isSPW)
