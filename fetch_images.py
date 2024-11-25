@@ -569,7 +569,7 @@ def create_DataFrame_SPW(root,valid, extensions,htd, columns=["Well_Name","IMAGE
             dirs.append(file)
 
             # get the OME_Image
-            new_filename = "_".join(file.split("_")[:-1])
+            new_filename = os.path.splitext(file)[0]
 
             # truncate file name if too long
             if len(new_filename) > MAX_NAME:
@@ -577,7 +577,7 @@ def create_DataFrame_SPW(root,valid, extensions,htd, columns=["Well_Name","IMAGE
 
             # add row to the DataFrame
             #TODO: find out image name and MMA File path
-            row = pd.DataFrame([[well,new_filename,file,filepath,json,site,wavelength,zStep,timepoint]],columns=columns)
+            row = pd.DataFrame([[well,new_filename,file,filepath,json,site[1:],wavelength[1:],zStep.split("_")[-1],timepoint.split("_")[-1]]],columns=columns)
             df = df._append(row, ignore_index=True)
         
     df.sort_values(by="File Name", inplace=True)
@@ -679,5 +679,5 @@ if __name__ == "__main__":
     #isSPW is used to determine if our images are in the SPW format or not
     isSPW = True
     #arg = sys.argv[1]
-    # add the path to the excel file as an argument
     main("newImages\\root\images\POST-PUB_YCHAROS_template_noMacros_v16_Oct08_JL_CS_SPW_.xlsm",isSPW)
+
