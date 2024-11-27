@@ -509,7 +509,7 @@ def create_DataFrame_ProjDataset(root, extensions, columns=["File Name","New Fil
     return df
 
 #creates a dataframe for images using the SPW structure
-def create_DataFrame_SPW(root,valid, extensions,htd, columns=["Well_Name","IMAGE NAME","File Name","File Path","MMA FILE PATH","Site ID", "Wavelength ID", "Z Score", "TimePoint"]):
+def create_DataFrame_SPW(root,valid, extensions,htd, columns=["Well_Name","OME_Image_Name","File_Name","File_Path","MMA_File_Path","Site", "C", "Z", "T"]):
     """Create a DataFrame containing image file info for the root directory.
 
     DataFrame will contain file name, new file name constructed by replacing backslashes in filepath
@@ -569,7 +569,13 @@ def create_DataFrame_SPW(root,valid, extensions,htd, columns=["Well_Name","IMAGE
             dirs.append(file)
 
             # get the OME_Image
-            new_filename = os.path.splitext(file)[0]
+            name, ext = os.path.splitext(file)
+            parts = name.split("_")
+
+            #remove the well name from the parts
+            parts.pop(3)
+
+            new_filename = "_".join(parts)+ext
 
             # truncate file name if too long
             if len(new_filename) > MAX_NAME:
@@ -580,11 +586,11 @@ def create_DataFrame_SPW(root,valid, extensions,htd, columns=["Well_Name","IMAGE
             row = pd.DataFrame([[well,new_filename,file,filepath,json,site[1:],wavelength[1:],zStep.split("_")[-1],timepoint.split("_")[-1]]],columns=columns)
             df = df._append(row, ignore_index=True)
         
-    df.sort_values(by="File Name", inplace=True)
+    df.sort_values(by="File_Name", inplace=True)
     return df
 
 # NOTE: : doesn't close file after writing
-def write_excel(file, df, sheet_number=2, cell="A14"):
+def write_excel(file, df, sheet_number=3, cell="A2"):
     """Write DataFrame to an existing excel file on a specific sheet starting at a specific cell.
 
      Args:
@@ -663,6 +669,21 @@ def main(excelPath,isSPW):
 
             #get list of image names to be displayed on excel file
             validImageNames = getValidImageNames(validImages)
+
+            #get the list of well names
+            wellNames = set()
+            for timepoint in validImages:
+                for zstep in validImages[timepoint]:
+                    for well in validImages[timepoint][zstep]:
+                        wellNames.add(well)
+            wellsColumn = {
+                "Well_Name": list(wellNames)
+            }
+            #create the plate-map dataframe
+            pm = pd.DataFrame(wellsColumn)
+            write_excel(excelPath, pm, 2, "A14")
+
+            #create the Well-Image-Map dataframe
             df = create_DataFrame_SPW(os.path.join(cwd, dataset),validImageNames,extensions,htd)
 
         #if the htd file is null, process the images as if they were Project/Dataset    
@@ -680,4 +701,3 @@ if __name__ == "__main__":
     isSPW = True
     #arg = sys.argv[1]
     main("newImages\\root\images\POST-PUB_YCHAROS_template_noMacros_v16_Oct08_JL_CS_SPW_.xlsm",isSPW)
-
