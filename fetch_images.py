@@ -90,7 +90,7 @@ def checkName(filename,htd):
     if htd["wavelength"]["number"] == 1:
         regex = "(.+)_([A-Z]\d+)_(s\d+).TIF"
         re.match(regex,filename)
-    
+
     if htd["sites"] == 1 and htd["wavelength"]["number"] == 1:
         regex = "(.+)_([A-Z]\d+).TIF"
         return re.match(regex,filename)
@@ -616,6 +616,7 @@ def write_excel(file, df, sheet_number=3, cell="A2"):
 
     sheet[cell].options(index=False, header=False).value = df
     wb.save(file)
+    wb.close()
 
 # NOTE: Using sheet index not sheet name because the unicode character U+0399 capital Greek Iota is present instead of U+0049 capital Roman I in some sheet names
 # NOTE: : doesn't close file after reading
@@ -640,6 +641,8 @@ def read_excel(file, dataset_sheet=2, image_list_sheet=2, dataset_cell="B9", ima
     cell = sheet[image_list_cell]
     extensions = cell.value
     extensions = extensions.split(" ")
+
+    wb.close()
     return (dataset, extensions)
 
 def main(excelPath,isSPW):
@@ -662,7 +665,6 @@ def main(excelPath,isSPW):
             #using the htd file, get dictionary of valid and refused images. Retreive incomplete wells too
             validImages,rejectedImages = getImages(dataset,htd)
             incomplete = getIncompleteWells(htd, validImages)
-
             #TODO add error if there is something in rejectedImages or incomplete.
             if rejectedImages or incomplete:
                 print("error")
