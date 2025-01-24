@@ -1,0 +1,61 @@
+Sub PyOmeroImporterExcelHelper()
+    Dim isDebug As Boolean
+    Dim cellVal As Variant
+    Dim osType As String
+    Dim scriptPath As String
+    Dim command As String
+    Dim excelPath As String
+    
+    cellVal = Range("C9").Value
+    isDebug = False
+    If cellVal = True Then
+        isDebug = True
+    End If
+    ' Get the OS
+    osType = Application.OperatingSystem
+    ' Get the path of the Excel workbook this is being run from
+    excelPath = Chr(34) & Application.ThisWorkbook.FullName & Chr(34)
+    
+    If InStr(osType, "Macintosh") > 0 Then
+        ' Set the path to the Shell script
+        If isDebug Then
+            ' Find the script in the current directory
+            scriptPath = Chr(34) & Application.ThisWorkbook.Path & "/PyOmeroImporterExcelHelper.sh" & Chr(34)
+        Else
+            ' Find the script in the home directory under OmeroImporter
+            scriptPath = Chr(34) & "~/OmeroImporter/PyOmeroImporterExcelHelper.sh" & Chr(34)
+        End If
+        ' Launch the shell script on Shell
+        command = "bash" & Chr(32) & scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
+        If isDebug Then
+            Call shell(command, vbNormalFocus)
+        Else
+             Call shell(command, vbHide)
+        End If
+    ElseIf InStr(osType, "Windows") > 0 Then
+        ' Set the path to the PowerShell script
+        If isDebug Then
+            ' Find the script in the current directory
+            scriptPath = Chr(34) & Application.ThisWorkbook.Path & "\PyOmeroImporterExcelHelper.ps1" & Chr(34)
+        Else
+            ' Find the script in the home directory under OmeroImporter, need to find home directory first
+            homeDirectory = Environ("USERPROFILE")
+            If Right(homeDirectory, 1) <> "\" Then
+                ' Add backslash if not already present
+                homeDirectory = homeDirectory & "\"
+            End If
+            'Build path from home directory
+            scriptPath = Chr(34) & homeDirectory & "OmeroImporter\PyOmeroImporterExcelHelper.ps1" & Chr(34)
+        End If
+        ' Launch the PowerShell script on Windows
+        command = "powershell -NoExit -ExecutionPolicy Bypass -File" & Chr(32) & scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
+        If isDebug Then
+            Call shell(command, vbNormalFocus)
+        Else
+            Call shell(command, vbHide)
+        End If
+    Else
+        MsgBox "Unsupported OS"
+    End If
+    MsgBox "Macro completed, cells should be filling shortly"
+End Sub
