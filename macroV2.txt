@@ -26,12 +26,8 @@ Sub PyOmeroImporterExcelHelper()
             scriptPath = Chr(34) & "~/OmeroImporter/PyOmeroImporterExcelHelper.sh" & Chr(34)
         End If
         ' Launch the shell script on Shell
-        command = "bash" & Chr(32) & scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
-        If isDebug Then
-            Call shell(command, vbNormalFocus)
-        Else
-             Call shell(command, vbHide)
-        End If
+        command = scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
+        result = AppleScriptTask("PyOmeroImporterExcelHelper.scpt", "ExecuteScript", command)
     ElseIf InStr(osType, "Windows") > 0 Then
         ' Set the path to the PowerShell script
         If isDebug Then
@@ -39,7 +35,7 @@ Sub PyOmeroImporterExcelHelper()
             scriptPath = Chr(34) & Application.ThisWorkbook.Path & "\PyOmeroImporterExcelHelper.ps1" & Chr(34)
         Else
             ' Find the script in the home directory under OmeroImporter, need to find home directory first
-            homeDirectory = Environ("USERPROFILE")
+            homeDirectory = VBA.Environ$("USERPROFILE")
             If Right(homeDirectory, 1) <> "\" Then
                 ' Add backslash if not already present
                 homeDirectory = homeDirectory & "\"
@@ -50,9 +46,9 @@ Sub PyOmeroImporterExcelHelper()
         ' Launch the PowerShell script on Windows
         command = "powershell -NoExit -ExecutionPolicy Bypass -File" & Chr(32) & scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
         If isDebug Then
-            Call shell(command, vbNormalFocus)
+            Call Shell(command, vbNormalFocus)
         Else
-            Call shell(command, vbHide)
+            Call Shell(command, vbHide)
         End If
     Else
         MsgBox "Unsupported OS"

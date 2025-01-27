@@ -6,3 +6,5 @@ omeroimporter*.key
 .venv
 __pycache__
 *2022 Pazour Import Test Project 3_Dataset*
+.DS_Store
+~*
