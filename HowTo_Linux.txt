@@ -1,0 +1,18 @@
+1) Create a OmeroImporter folder in your home directory
+
+2) Run the following command in a Shell: 
+	a) python --version (maybe python3 instead of python)
+	a2) if you see command not found: Install Python 3.12.8
+	b) python -mvenv ~/OmeroImporter/venv3 (maybe python3 instead of python)
+	c) source ~/OmeroImporter/venv3/bin/activate
+	d) pip install -U pip (U should see successfully installed pip-XX.X, latest version of pip)
+	e) pip install numpy pandas python-dateutil setuptools xlwings (U should see successfully installed XXX)
+	f) deactivate
+
+4) Copy the following files:
+	a) "PyOmeroImporterExcelHelper.sh" and "fetch_images.py" in the OmeroImporter folder
+
+5) Copy Pazour_OMERO_import_template_wMacros_v07.xlsm in the Project folder and adapt as necessary
+
+6) Run the following command in a Shell:
+	a) . "~/OmeroImporter/PyOmeroImporterExcelHelper.sh" "~/<path to excel file>/<excel file name>" false
