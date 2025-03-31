@@ -10,6 +10,12 @@ Please while testing this software take screenshot of the various passages so th
 	d) pip install -U pip (U should see successfully installed pip-XX.X, latest version of pip)
 	e) pip install numpy pandas python-dateutil setuptools xlwings (U should see successfully installed XXX)
 	f) deactivate
+IMPORTANT NOTE: 
+Moving or rename folder containing virtual environment can break functionalities and it should be avoided.
+If you need to move or rename the folder you should:
+a) delete the venv3 folder
+b) move or rename the folder
+c) redo step 2
 
 4) Copy "PyOmeroImporterExcelHelper.ps1" and "fetch_images.py" in the OmeroImporter folder
 
