@@ -1,4 +1,5 @@
 Sub PyOmeroImporterExcelHelper()
+    Dim isOverride As Boolean
     Dim isDebug As Boolean
     Dim cellVal As Variant
     Dim osType As String
@@ -14,6 +15,45 @@ Sub PyOmeroImporterExcelHelper()
     If cellVal = True Then
         isDebug = True
     End If
+    
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    
+    cellVal = Range("B9").Value
+    isOverride = False
+    If cellVal = True Then
+        isOverride = True
+    End If
+    If Not isOverride Then
+        Response = MsgBox("The macro you are trying to run is going" & vbCrLf & "to override all the entries in the table below." & vbCrLf & "Are you sure you want to continue?", vbQuestion + vbYesNo, "Confirmation")
+
+        ' Check the user's response
+        If Response = vbNo Then
+            ' Code to execute if the user clicks "Yes"
+            Exit Sub
+        End If
+    End If
+    
+    ' Use the active sheet
+    Set ws = ActiveSheet
+    ' Check if column A is entirely filled
+    If ws.Cells(ws.Rows.Count, 1).Value <> "" Then
+        ' If the last cell in column A is not empty, assume all rows are filled
+        lastRow = ws.Rows.Count
+    Else
+        ' Otherwise, find the last row with data in column A
+        lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    End If
+    ' Debugging: Show the last row to delete
+    'MsgBox "Last row to delete: " & lastRow
+    ' Check if there are any rows to delete
+    If lastRow >= 14 Then
+        ' Clear the content of rows from row 14 to the last row
+        ws.Rows("14:" & lastRow).ClearContents
+    ' Else
+    '    MsgBox "No rows to delete starting from row 14.", vbInformation
+    End If
+    
     ' Get the OS
     osType = Application.OperatingSystem
     ' Get the path of the Excel workbook this is being run from
@@ -31,8 +71,8 @@ Sub PyOmeroImporterExcelHelper()
         ' Launch the shell script on Shell
         command = scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
         #If Mac Then
-        result = AppleScriptTask("PyOmeroImporterExcelHelper.scpt", "ExecuteScript", command)
-        MsgBox "Macro completed, cells should be filling shortly " & result
+            MsgBox "Macro completed, cells should be filling shortly"
+            result = AppleScriptTask("PyOmeroImporterExcelHelper.scpt", "ExecuteScript", command)
         #End If
     ElseIf InStr(osType, "Windows") > 0 Then
         ' Set the path to the PowerShell script
@@ -51,12 +91,12 @@ Sub PyOmeroImporterExcelHelper()
         End If
         ' Launch the PowerShell script on Windows
         command = "powershell -NoExit -ExecutionPolicy Bypass -File" & Chr(32) & scriptPath & Chr(32) & excelPath & Chr(32) & isDebug
+        MsgBox "Macro completed, cells should be filling shortly"
         If isDebug Then
             Call Shell(command, vbNormalFocus)
         Else
             Call Shell(command, vbHide)
         End If
-    MsgBox "Macro completed, cells should be filling shortly"
     Else
         MsgBox "Unsupported OS"
     End If
